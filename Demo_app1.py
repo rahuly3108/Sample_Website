@@ -17,6 +17,7 @@ from urllib.parse import quote
 # Initialize the Dash app with suppress_callback_exceptions=True
 app = dash.Dash(__name__ ,suppress_callback_exceptions=True)
 server = app.server
+
 # Define the layout of the page without the "Select Variable to Get the Summary Stats" section
 initial_layout = html.Div([
     html.H1("Motor Insurance Analysis", style={'textAlign': 'center'}),
