@@ -6,6 +6,7 @@ packaging==21.3
 pipreqs==0.4.12
 pre-commit==2.16.0
 pytest==6.2.5
+reportlab
 pandas
 yolk3k==0.9
 termcolor==1.1.0
