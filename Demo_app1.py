@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[3]:
 
 
 import dash
@@ -19,6 +19,7 @@ from reportlab.lib import colors
 
 # Initialize the Dash app with suppress_callback_exceptions=True
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
+server = app.server
 
 # Define the layout of the page without the "Select Variable to Get the Summary Stats" section
 initial_layout = html.Div([
