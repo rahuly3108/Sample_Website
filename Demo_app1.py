@@ -1,7 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[6]:
+# In[ ]:
+
+
+pip install pdfkit
+
+
+# In[1]:
 
 
 import dash
@@ -9,14 +15,16 @@ from dash import dcc, html, Input, Output, State
 import pandas as pd
 import base64
 import io
-import plotly.express as px
 import dash_table
+import plotly.express as px
 from datetime import datetime
 from urllib.parse import quote
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
 
 # Initialize the Dash app with suppress_callback_exceptions=True
-app = dash.Dash(__name__ ,suppress_callback_exceptions=True)
-server = app.server
+app = dash.Dash(__name__, suppress_callback_exceptions=True)
 
 # Define the layout of the page without the "Select Variable to Get the Summary Stats" section
 initial_layout = html.Div([
@@ -235,13 +243,23 @@ def update_date_range_output(start_date, end_date, data, table_data):
                     style_cell={'textAlign': 'center', 'padding': '8px'},
                     style_header={'textAlign': 'center'}
                 ),
-                html.A(
-                    'Download CSV',
-                    id='download-link',
-                    download="date_range_table.csv",
-                    href="",
-                    target="_blank",
-                ),
+                html.Div([
+                    html.A(
+                        'Download CSV',
+                        id='download-csv-link',
+                        download="date_range_table.csv",
+                        href="",
+                        target="_blank",
+                    ),
+                    html.A(
+                        'Download PDF',
+                        id='download-pdf-link',
+                        download="date_range_analysis.pdf",
+                        href="",
+                        target="_blank",
+                        style={'margin-left': '20px'}  # Add some margin between the links
+                    )
+                ]),
                 statistics_table
             ])
         else:
@@ -249,14 +267,14 @@ def update_date_range_output(start_date, end_date, data, table_data):
     else:
         return dash.no_update
 
-# Callback to update download link href
+# Callback to update download link href for CSV
 @app.callback(
-    Output('download-link', 'href'),
+    Output('download-csv-link', 'href'),
     [Input('date-range-table', 'data'),
      Input('date-range-picker', 'start_date'),
      Input('date-range-picker', 'end_date')],
     [State('data-store', 'data')])
-def update_download_link(data, start_date, end_date, stored_data):
+def update_download_csv_link(data, start_date, end_date, stored_data):
     if start_date is not None and end_date is not None and stored_data is not None:
         df = pd.read_csv(io.StringIO(stored_data))
         df['Date'] = pd.to_datetime(df['Date'])
@@ -264,6 +282,43 @@ def update_download_link(data, start_date, end_date, stored_data):
         csv_string = filtered_df.to_csv(index=False, encoding='utf-8-sig')
         csv_string = "data:text/csv;charset=utf-8-sig," + quote(csv_string)
         return csv_string
+    else:
+        return ""
+
+# Function to generate PDF from CSV data
+def generate_pdf(csv_data, pdf_filename):
+    pdf = SimpleDocTemplate(pdf_filename, pagesize=letter)
+    data = []
+    for line in csv_data.split('\n'):
+        data.append(line.split(','))
+    table = Table(data)
+    style = TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Courier-Bold'),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.black)])
+    table.setStyle(style)
+    pdf.build([table])
+
+# Callback to update download link href for PDF
+@app.callback(
+    Output('download-pdf-link', 'href'),
+    [Input('date-range-table', 'data'),
+     Input('date-range-picker', 'start_date'),
+     Input('date-range-picker', 'end_date')],
+    [State('data-store', 'data')])
+def update_download_pdf_link(data, start_date, end_date, stored_data):
+    if start_date is not None and end_date is not None and stored_data is not None:
+        df = pd.read_csv(io.StringIO(stored_data))
+        df['Date'] = pd.to_datetime(df['Date'])
+        filtered_df = df[(df['Date'] >= start_date) & (df['Date'] <= end_date)]
+        csv_data = filtered_df.to_csv(index=False)
+        pdf_filename = "date_range_analysis.pdf"
+        generate_pdf(csv_data, pdf_filename)
+        pdf_string = "data:application/pdf;charset=utf-8," + quote(open(pdf_filename, 'rb').read())
+        return pdf_string
     else:
         return ""
 
