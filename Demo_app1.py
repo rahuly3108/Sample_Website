@@ -1,12 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
-
-pip install pdfkit
-
-
 # In[1]:
 
 
