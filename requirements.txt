@@ -2,6 +2,7 @@ dash>=2.5.1
 dash-bootstrap-components
 Flask
 gunicorn
+dash-auth
 packaging==21.3
 pipreqs==0.4.12
 pre-commit==2.16.0
