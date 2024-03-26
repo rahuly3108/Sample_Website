@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[3]:
+# In[5]:
 
 
 import dash
@@ -16,10 +16,22 @@ from urllib.parse import quote
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from reportlab.lib import colors
+import dash_auth
+
+
+VALID_USERNAME_PASSWORD_PAIRS = {
+    'hello': 'world'
+}
+
 
 # Initialize the Dash app with suppress_callback_exceptions=True
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
-server = app.server
+
+# Enable authentication
+auth = dash_auth.BasicAuth(
+    app,
+    VALID_USERNAME_PASSWORD_PAIRS
+)
 
 # Define the layout of the page without the "Select Variable to Get the Summary Stats" section
 initial_layout = html.Div([
@@ -320,6 +332,7 @@ def update_download_pdf_link(data, start_date, end_date, stored_data):
 # Run the Dash app
 if __name__ == '__main__':
     app.run_server(debug=True, port=8052)
+
 
 
 # In[ ]:
